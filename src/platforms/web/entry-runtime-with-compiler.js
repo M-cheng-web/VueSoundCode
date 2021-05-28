@@ -19,9 +19,10 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 保证得到的是一个DOM元素
   el = el && query(el)
 
-  /* istanbul ignore if */
+  /* 如果 el是body或者是页面根元素则警告并退出挂载流程, 因为 Vue不能挂载在body,html这样的根节点上 */
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -30,7 +31,7 @@ Vue.prototype.$mount = function (
   }
 
   const options = this.$options
-  // resolve template/el and convert to render function
+  // 解析模板 el并转换为渲染函数
   if (!options.render) {
     let template = options.template
     if (template) {

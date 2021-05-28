@@ -28,11 +28,11 @@ export function initMixin (Vue: Class<Component>) {
 
     // a flag to avoid this being observed
     vm._isVue = true
-    // merge options
+    // 合并选项
     if (options && options._isComponent) {
-      // optimize internal component instantiation
-      // since dynamic options merging is pretty slow, and none of the
-      // internal component options needs special treatment.
+      // 优化内部组件实例化
+      // 因为动态选项合并是相当慢的，而且没有内部组件选项需要特殊处理
+      // 个人: 就是对 new Vue(options) 中的参数进行一些操作
       initInternalComponent(vm, options)
     } else {
       vm.$options = mergeOptions(

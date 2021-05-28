@@ -45,11 +45,11 @@ export function createElement (
 }
 
 export function _createElement (
-  context: Component,
-  tag?: string | Class<Component> | Function | Object,
-  data?: VNodeData,
-  children?: any,
-  normalizationType?: number
+  context: Component, // VNode的上下文环境
+  tag?: string | Class<Component> | Function | Object, // 表示标签,它可以是一个字符串
+  data?: VNodeData, // 表示VNode的数据
+  children?: any, // 当前VNode的子节点
+  normalizationType?: number // 主要是判断rende函数是编译生成的还是用户手写的
 ): VNode | Array<VNode> {
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -88,8 +88,10 @@ export function _createElement (
     children.length = 0
   }
   if (normalizationType === ALWAYS_NORMALIZE) {
+    // 如果render函数是手写的
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
+    // 如果render函数是编译生成的
     children = simpleNormalizeChildren(children)
   }
   let vnode, ns
