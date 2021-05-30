@@ -30,6 +30,11 @@ import {
 
 export const emptyNode = new VNode('', {}, [])
 
+// create：`DOM`元素节点创建时/初始化组件时调用
+// activate: 组件激活时调用
+// update: `DOM`节点更新时调用
+// remove: `DOM`节点移除时调用
+// destory: 组件销毁时调用
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
@@ -126,6 +131,8 @@ export function createPatchFunction (backend) {
   /**
    * 创建VNode节点的vnode.elm。不同类型的VNode，其vnode.elm创建过程也不一样。对于组件占位VNode
    * 会调用createComponent来创建组件占位VNode的组件实例；对于非组件占位VNode会创建对应的DOM节点
+   * 
+   * 内部createChildren方法会递归调用createElm,insert  会导致先插入子节点,再插入父节点,从内部开始插入
    */
   function createElm (
     vnode,
@@ -136,7 +143,7 @@ export function createPatchFunction (backend) {
     ownerArray,
     index
   ) {
-    if (isDef(vnode.elm) && isDef(ownerArray)) {
+    if (isDef(vnode.elm) && isDef(ownerArray)) { // 处理静态节点的情况
       // This vnode was used in a previous render!
       // now it's used as a new node, overwriting its elm would cause
       // potential patch errors down the road when it's used as an insertion
@@ -160,6 +167,7 @@ export function createPatchFunction (backend) {
         if (data && data.pre) {
           creatingElmInVPre++
         }
+        // 如果这个标签是无效标签,或者是没有全局注册/局部注册的标签
         if (isUnknownElement(vnode, creatingElmInVPre)) {
           warn(
             'Unknown custom element: <' + tag + '> - did you ' +
@@ -171,8 +179,8 @@ export function createPatchFunction (backend) {
       }
 
       vnode.elm = vnode.ns
-        ? nodeOps.createElementNS(vnode.ns, tag)
-        : nodeOps.createElement(tag, vnode)
+        ? nodeOps.createElementNS(vnode.ns, tag) // 创建具有命名空间的DOM节点
+        : nodeOps.createElement(tag, vnode) // 创建普通DOM节点
       setScope(vnode)
 
       /* istanbul ignore if */
@@ -195,7 +203,7 @@ export function createPatchFunction (backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
-        // 调用createChildren遍历子节点创建对应的DOM节点
+        // 遍历子节点创建对应的DOM节点
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
           // 执行create钩子函数
@@ -292,7 +300,7 @@ export function createPatchFunction (backend) {
         if (nodeOps.parentNode(ref) === parent) {
           // parent是在哪个元素下添加
           // elm是添加哪个元素
-          // ref是要添加的位置的DOM元素
+          // ref是要添加的位置的DOM元素(把elm插入到ref后面)
           nodeOps.insertBefore(parent, elm, ref)
         }
       } else {
@@ -344,6 +352,9 @@ export function createPatchFunction (backend) {
   // set scope id attribute for scoped CSS.
   // this is implemented as a special case to avoid the overhead
   // of going through the normal attribute patching process.
+  // 设置范围CSS的范围id属性。
+  // 这是一个特殊的情况下实现，以避免开销
+  // 通过正常的属性修补过程
   function setScope (vnode) {
     let i
     if (isDef(i = vnode.fnScopeId)) {
@@ -533,6 +544,9 @@ export function createPatchFunction (backend) {
     }
   }
 
+  /**
+   * 如果符合sameVnode，就不会渲染vnode重新创建DOM节点，而是在原有的DOM节点上进行修补，尽可能复用原有的DOM节点
+   */
   function patchVnode (
     oldVnode,
     vnode,
@@ -541,11 +555,11 @@ export function createPatchFunction (backend) {
     index,
     removeOnly
   ) {
-    if (oldVnode === vnode) {
+    if (oldVnode === vnode) { // 如果两个节点相同则直接返回
       return
     }
 
-    if (isDef(vnode.elm) && isDef(ownerArray)) {
+    if (isDef(vnode.elm) && isDef(ownerArray)) { // 处理静态节点的情况
       // clone reused vnode
       vnode = ownerArray[index] = cloneVNode(vnode)
     }
@@ -783,7 +797,7 @@ export function createPatchFunction (backend) {
         const oldElm = oldVnode.elm // 获取到老节点的真实DOM
         const parentElm = nodeOps.parentNode(oldElm) // 获取到老节点的父级真实DOM
 
-        // create new node
+        // 把vnode挂载到真实的DOM上
         createElm(
           vnode,
           insertedVnodeQueue,
@@ -794,6 +808,7 @@ export function createPatchFunction (backend) {
           nodeOps.nextSibling(oldElm)
         )
 
+        // 前面的步骤已经把虚拟DOM转换为了真实DOM,并且插入到了 parentElm中
         // 递归地更新父占位符节点元素
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent

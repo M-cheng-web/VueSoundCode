@@ -32,10 +32,12 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // 解析模板 el并转换为渲染函数
+  // 如果没有定义 render 方法,则会把 el 或者 template 字符串转换成 render 方法
   if (!options.render) {
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
+        // 如果 template是字符串则转换为DOM节点,并且将节点的innerHTML重新赋值给 template
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -47,6 +49,7 @@ Vue.prototype.$mount = function (
           }
         }
       } else if (template.nodeType) {
+        // 如果nodeType属性,证明template是DOM节点,则直接重新赋值innerHTML
         template = template.innerHTML
       } else {
         if (process.env.NODE_ENV !== 'production') {
@@ -55,6 +58,8 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 如果template不存在, 意味着用户没有在外层包裹template,而是直接写了内容标签
+      // 所以这个时候el是真正的内容,所以获取el的 outerHTML   (猜想)
       template = getOuterHTML(el)
     }
     if (template) {

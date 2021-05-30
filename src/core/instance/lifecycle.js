@@ -167,7 +167,7 @@ export function mountComponent (
   callHook(vm, 'beforeMount')
 
   let updateComponent
-  /* istanbul ignore if */
+  // 在开发环境上,调用window.performance来进行性能监控,记录时刻间隔的毫秒数
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     updateComponent = () => {
       const name = vm._name

@@ -39,6 +39,7 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 如果是浏览器端那么将el转化为DOM节点,如果是服务端渲染就不需要这个el了
   el = el && inBrowser ? query(el) : undefined
   return mountComponent(this, el, hydrating)
 }
